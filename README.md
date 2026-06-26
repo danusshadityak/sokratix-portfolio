@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Sokratix — UI/UX Designer Portfolio
 
-## Getting Started
+A premium, dark-themed personal portfolio for **Danussh Aditya K**, built with
+**Next.js 16 + Tailwind CSS v4 + Framer Motion**, with a **Supabase**-backed admin
+panel for managing content and media.
 
-First, run the development server:
+> _"Design begins with better questions."_
+
+## Features
+
+- Animated dark portfolio: hero with a custom-controlled intro video, UX process
+  timeline, projects, case studies, skills, principles, metrics, and contact.
+- **Admin panel** at `/admin` (email/password login) to add/edit/delete **Projects**
+  and **Case Studies**, replace the **intro video/poster**, and manage a **gallery**
+  of images.
+- Works out of the box with built-in default content; Supabase only powers the admin
+  + live editing.
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev          # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The public site renders immediately using the defaults in `src/lib/data.js`.
+The admin panel needs Supabase (below).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Supabase setup (for the admin panel)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a free project at [supabase.com](https://supabase.com).
+2. In **SQL Editor**, run the contents of [`supabase/schema.sql`](supabase/schema.sql).
+   This creates the tables, RLS policies, the public `media` storage bucket, and seeds
+   your projects + case studies.
+3. In **Project Settings → API**, copy your keys. Then:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+   Fill in:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (server-only, never exposed)
+4. Create your admin user: **Authentication → Users → Add user** (set an email +
+   password, mark email confirmed). Use those to log in at `/admin`.
+5. Restart `npm run dev`.
 
-## Learn More
+## Replacing the intro video
 
-To learn more about Next.js, take a look at the following resources:
+- Easiest: log in to `/admin` → **Intro Video** tab → upload a new file.
+- Or replace `public/intro-video.mp4` directly.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How content loads
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`src/lib/content.js` reads from Supabase first and falls back to `src/lib/data.js`
+when Supabase is unconfigured or a table is empty — so the site never looks broken.
+The home page revalidates every 30s, so admin edits appear shortly after saving.
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/            page.js (public), login/, admin/ (+ actions.js)
+  components/     public sections + ui/ primitives + admin/ dashboard
+  lib/            data.js (defaults), content.js (fetch), motion.js, supabase/
+  proxy.js        protects /admin (Next 16 renamed middleware → proxy)
+supabase/schema.sql
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech notes
+
+- Built on **Next.js 16** conventions: `cookies()` is async, route `params` are
+  promises, and middleware is named `proxy`.
+- Tailwind **v4** with brand tokens defined in `src/app/globals.css` (`@theme`).
+
+## Deploy
+
+Deploy to **Vercel**, add the three env vars in the project settings, and you're live.
+
+---
+
+© Danussh Aditya K · Salem, India ·
+[Behance](https://www.behance.net/danusshadityak) ·
+[LinkedIn](https://www.linkedin.com/in/danussh-aditya-k-6284ab268/)
